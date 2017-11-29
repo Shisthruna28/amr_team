@@ -74,70 +74,60 @@ class BugBrain:
 
 
 
-
+#In follow wall the initial vector to the goal is drawn from the hitting position. and the hit points are added in the list
     def follow_wall(self, x, y, theta):
         """
         This function is called when the state machine enters the wallfollower
         state.
         """
-        #record hit points and draw line from hit points to goal using vectors
-        self.wp_hitrec = Vec2(x,y)
+        self.wp_hitwall = Vec2(x,y)#for visualizng in Rviz the hit point
         self.xhit = x
         self.yhit = y
-        self.wp_three = Point(x, y)
+        self.wp_start= Point(x, y)
         self.hitlist.append((x,y))
-        print self.hitlist[0][0]
         self.wp_goal = Point(self.goal_x, self.goal_y)
-        self.ln_three = Line.from_points([self.wp_three, self.wp_goal])
+        self.ln_goal = Line.from_points([self.wp_start, self.wp_goal])
         self.Vec_hit = Vec2(x,y)
         self.Vec_n = self.Vec_goal-self.Vec_hit
         self.last_hit_dist = self.Vec_hit.distance_to(self.wp_goal)
 
 
 
-
-        pass
-
+#In leave wall a flag is set when the bot leaves the wall and follow line. In unreachable goal this is not set to figure infinite loop
     def leave_wall(self, x, y, theta):
         """
         This function is called when the state machine leaves the wallfollower
         state.
         """
-        #used to check if the bot has left wall to follow line again(i.e obstacle is not closed)
-        self.leave_wall_count = self.leave_wall_count+1
+        self.leave_wall_count = 1
         # compute and store necessary variables
-        pass
 
+#Unreachable goal is decided if the bot didnt leave the wall and reaches the hit point again.
     def is_goal_unreachable(self, x, y, theta):
         """
         This function is regularly called from the wallfollower state to check
         the brain's belief about whether the goal is unreachable.
         """
-        #check if the robot has started movement to follow the wall after a hit
         if (abs(self.xhit - x)>0.5 or abs(self.yhit - y)>0.5) :
-            self.started_away = self.started_away+1
-        #return true if the bot reaches back to the origin point(first instance of hit)
-        if (abs(x- self.hitlist[0][0])<0.5 and abs(y- self.hitlist[0][1])<0.5 and self.leave_wall_count==0 and self.started_away>0):
+            self.started_away = 1
+        if (abs(x- self.hitlist[0][0])<0.2 and abs(y- self.hitlist[0][1])<0.2 and self.leave_wall_count==0 and self.started_away==1):
             return True
 
 
-
+#If the angle between vector(current position to gaol position) and global vector(from hit point to goal point) is 0 or around 180 leave the walll.
     def is_time_to_leave_wall(self, x, y, theta):
         """
         This function is regularly called from the wallfollower state to check
         the brain's belief about whether it is the right time (or place) to
         leave the wall and move straight to the goal.
         """
-        #Draw vector at every point and compare the angle with the main vector connecting to the goal(i.e line to follow)
         v = Vec2(x, y)
         v1 = Vec2(self.goal_x, self.goal_y)
         v3 = v1 - v
         angle_diff = v3.angle_to(self.Vec_n)
-        print abs(angle_diff)
+
         self.curr_leave_dist = v.distance_to(v1)
-        #check if the vectors are parallel and leave only if the current distance to goal is shorter than the distance from the previous hit point to goal
         if (abs(self.xhit - x)>0.5 or abs(self.yhit - y)>0.5) and (abs(angle_diff)<2 or (abs(angle_diff)<182 and abs(angle_diff)>178 )):
-            self.leavelist.append((x,y))
             if self.curr_leave_dist < self.last_hit_dist:
                 return True
 

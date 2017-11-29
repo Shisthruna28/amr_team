@@ -31,11 +31,27 @@ from math import cos
 from math import pi
 from types import MethodType
 from geometry_msgs.msg import Twist
-import time
 import numpy as np
 
 
 __all__ = ['construct']
+
+def findWall(ud):
+              if ud.front_min < ud.clearance:
+                  ud.velocity = (0, 0, 0)
+                  return 'found_obstacle'
+              ud.velocity = (1, 0, 0)
+def alignWall(ud):
+                if ud.sideavg>ud.allign_tolerance:
+                    ud.velocity = (0, 0, 0.2)
+                ud.velocity = (0, 0, 0)
+
+def followWall(ud):
+                #if
+                ud.velocity = (0, 0, 0)
+
+
+
 
 #=============================== YOUR CODE HERE ===============================
 # Instructions: write a function for each state of wallfollower state machine.
@@ -59,79 +75,6 @@ __all__ = ['construct']
 #                   return 'found_obstacle'
 #               ud.velocity = (1, 0, 0)
 #==============================================================================
-def findWall(userdata):
-    # userdata.front_min = min(userdata.ranges[3],userdata.ranges[4])
-    if userdata.front_min < userdata.clearance:
-        userdata.velocity = (0, 0, 0)
-        return 'found_obstacle'
-    else:
-        userdata.velocity = (0.3, 0, 0)
-
-def alignWall(userdata):
-    #userdata.ranges[7] < 1.3) and (userdata.ranges[8] < 1.3)
-
-    if (abs(userdata.ranges[7] - userdata.ranges[8])<= 0.015 and not (userdata.front_min < userdata.clearance )):
-        # if (userdata.ranges[7]> 0.5):
-        #     userdata.velocity=(0.2,-0.1,0.0)
-        # if (userdata.ranges[7]<0.3):
-        #     userdata.velocity=(0.2,0.1,0.0)
-
-        userdata.velocity = (0, 0, 0)
-        return 'stopped'
-    else:
-        userdata.velocity = (0, 0, 0.2)
-
-
-        # else:
-
-
-
-
-def followWall(userdata):
-    #userdata.front_min = min(userdata.ranges[3],userdata.ranges[4])
-    #if userdata.front_min < userdata.clearance:
-    #userdata.velocity = (0.5, 0, 0)
-    # if userdata.front_min < userdata.clearance:
-    #     return 'stopped1'
-    # else:
-
-    if ((userdata.front_min < userdata.clearance) or (userdata.ranges[6]< 0.08) or (userdata.ranges[1]< 0.08)):
-
-        return 'stopped1'
-    # elif (userdata.ranges[7]> 0.4):
-    #     userdata.velocity=(0.0,-0.1,0.0)
-
-    elif(userdata.ranges[7] - userdata.ranges[8] > 0.01 and not (userdata.ranges[6]<0.08) ):
-        if ((userdata.front_min < userdata.clearance) or (userdata.ranges[6]< 0.08) or (userdata.ranges[1]< 0.08)):
-            return 'stopped1'
-        else:
-            userdata.velocity = (0.2, 0, -0.3)
-    elif (userdata.ranges[7]<userdata.clearance):
-        userdata.velocity=(0.3,0.2,0.0)
-    elif(userdata.ranges[7]>(userdata.clearance+0.05)):
-        userdata.velocity=(0.3,-0.2,0.0)
-    else:
-        userdata.velocity=(0.3,0.0,0.0)
-    # elif ((userdata.ranges[7] < 1) and (userdata.ranges[8] < 1) and userdata.ranges[6]> 0.08 and abs(userdata.ranges[7] - userdata.ranges[8])<= 0.01 and not userdata.front_min < userdata.clearance):
-    #     if (userdata.ranges[7] < 0.1):
-    #         print userdata.ranges[7]
-    #         # userdata.velocity = (0.2, 0, 0.5)
-    #     else :
-    #         pass
-            #userdata.velocity = (0.3, 0, 0)
-    # else:
-    #     userdata.velocity=(0.0,-0.0,0.0)
-
-
-
-    # if ((userdata.ranges[7] - userdata.ranges[8])>userdata.clearance or (userdata.ranges[7] < 0.4) and (userdata.ranges[8] < 0.4)):
-    #     userdata.velocity = (0.2, 0, -0.2)
-    # elif((userdata.ranges[7] < 0.4) and (userdata.ranges[8] < 0.4) and abs(userdata.ranges[7] - userdata.ranges[8])<= userdata.clearance):
-    #     userdata.velocity = (0.3, 0, 0)
-    #     print userdata.ranges[7]
-    # else :
-    #     return 'stopped1'
-    # #userdata.velocity = (1, 0, 0)
 
 
 def set_ranges(self, ranges):
@@ -140,28 +83,13 @@ def set_ranges(self, ranges):
     Its argument is a list of Range messages as received by a sonar callback.
     For left hand side wallfollowing, the sensor values are mirrored (sides are swapped).
     """
-    self.userdata.ranges = np.zeros(16)
-    if self.userdata.direction == 1:
-
-        for i in range (len(ranges)):
-            self.userdata.ranges[i]=(ranges[i].range)
-        self.userdata.front_min = min(self.userdata.ranges[3],self.userdata.ranges[4]) #self.userdata.ranges[5],self.userdata.ranges[6],self.userdata.ranges[1],self.userdata.ranges[2])
-        print len(ranges)
-    else:
-        self.userdata.ranges[7]=ranges[0].range
-        self.userdata.ranges[8]=ranges[15].range
-        self.userdata.ranges[1]=ranges[6].range
-        self.userdata.ranges[6]=ranges[1].range
-        self.userdata.ranges[3]=ranges[3].range
-        self.userdata.ranges[4]=ranges[4].range
-        self.userdata.front_min = min(self.userdata.ranges[3],self.userdata.ranges[4])
-
-
-
-
-        #print self.userdata.front_min
-    #print self.userdata.ranges[7],self.userdata.ranges[7] - self.userdata.ranges[8]
-    #print self.userdata.ranges
+    for i in range(16):
+        self.userdata.ranges[i]=ranges[i].range
+    self.userdata.front_min = min(ranges[3].range, ranges[4].range)
+    self.userdata.sideM=ranges[7].range-ranges[8].range
+    self.userdata.sideL=ranges[6].range-ranges[9].range
+    self.userdata.sideU=ranges[5].range-ranges[10].range
+    self.userdata.sideavg=(self.userdata.sideM+self.userdata.sideL+self.userdata.sideU)/3
 
 
     #============================= YOUR CODE HERE =============================
@@ -202,11 +130,11 @@ def get_twist(self):
     """
     twist = Twist()
     twist.linear.x = self.userdata.velocity[0]
-    twist.linear.y = self.userdata.direction*self.userdata.velocity[1]
+    twist.linear.y = self.userdata.velocity[1]
     twist.linear.z = 0
     twist.angular.x = 0
     twist.angular.y = 0
-    twist.angular.z = self.userdata.direction*self.userdata.velocity[2]
+    twist.angular.z = self.userdata.velocity[2]
 
     #============================= YOUR CODE HERE =============================
     # Instructions: although this function is implemented, you may need to
@@ -247,42 +175,35 @@ def construct():
     # Set initial values in userdata
     sm.userdata.velocity = (0, 0, 0)
     sm.userdata.mode = 1
-    sm.userdata.clearance = 0.8
-    sm.userdata.ranges = []
+    sm.userdata.clearance = 0.3
+    sm.userdata.ranges = np.zeros(16)
     sm.userdata.max_forward_velocity = 0.3
     sm.userdata.default_rotational_speed = 0.5
     sm.userdata.direction = 1
-    sm.userdata.l = None
-    sm.userdata.r = None
-    sm.userdata.lf = None
-    sm.userdata.lb = None
-    sm.userdata.rf = None
-    sm.userdata.rb = None
-    #sm.userdata.front_min = None
-
-
+    sm.userdata.allign_tolerance=0.5
     with sm:
-        #pass
-        smach.StateMachine.add('FINDWALL',
-                             PreemptableState(findWall,
-                                              input_keys=['front_min', 'clearance'],
-                                              output_keys=['velocity'],
-                                              outcomes=['found_obstacle']),
-                             transitions={'found_obstacle': 'ALIGNWALL'})
+        smach.StateMachine.add('FINDWALL', PreemptableState(findWall,
+                                                                  input_keys=['front_min', 'clearance'],
+                                                                  output_keys=['velocity'],
+                                                                  outcomes=['found_obstacle']),
+                                                 transitions={'found_obstacle': 'ALIGNWALL'})
+        smach.StateMachine.add('ALIGNWALL', PreemptableState(alignWall,
+                                                                  input_keys=['sideavg', 'allign_tolerance'],
+                                                                  output_keys=['velocity'],
+                                                                  outcomes=['aligned_wall']),
+                                                 transitions={'aligned_wall': 'FOLLOWWALL'})
+        smach.StateMachine.add('FOLLOWWALL', PreemptableState(followWall,
+                                                              input_keys=['front_min', 'clearance'],
+                                                              output_keys=['velocity'],
+                                                              outcomes=['found_wall']),
+                                             transitions={'found_wall': 'FINDWALL'})
 
-        smach.StateMachine.add('ALIGNWALL',
-                             PreemptableState(alignWall,
-                                              input_keys=['ranges', 'clearance','front_min','direction'],
-                                              output_keys=['velocity'],
-                                              outcomes=['stopped']),
-                             transitions={'stopped': 'FOLLOWWALL'})
 
-        smach.StateMachine.add('FOLLOWWALL',
-                             PreemptableState(followWall,
-                                              input_keys=['ranges', 'clearance','front_min'],
-                                              output_keys=['velocity'],
-                                              outcomes=['stopped1']),
-                             transitions={'stopped1': 'ALIGNWALL'})
+
+
+
+
+
 
         #=========================== YOUR CODE HERE ===========================
         # Instructions: construct the state machine by adding the states that

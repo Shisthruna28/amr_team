@@ -36,9 +36,9 @@ class MotionControllerNode:
         max_linear_velocity = rospy.get_param('max_linear_velocity', 0.3)
         max_linear_acceleration = rospy.get_param('max_linear_acceleration', 0.05)
         linear_tolerance = rospy.get_param('linear_tolerance', 0.02)
-        max_angular_velocity = rospy.get_param('max_angular_velocity', 0.5)
+        max_angular_velocity = rospy.get_param('max_angular_velocity', 0.2)
         max_angular_acceleration = rospy.get_param('max_angular_acceleration', 0.03)
-        angular_tolerance = rospy.get_param('angular_tolerance', 0.02)
+        angular_tolerance = rospy.get_param('angular_tolerance', 0.1)
 
         abort_if_obstacle_detected = rospy.get_param('abort_if_obstacle_detected', True)
         self._controller_frequency = rospy.get_param('controller_frequency', 10.0)
@@ -52,11 +52,11 @@ class MotionControllerNode:
                                                                max_angular_velocity,
                                                                angular_tolerance)
         elif controller_type == self.CONTROLLER_TYPE_OMNI:
+            #Create omni controller
             self._velocity_controller = OmniVelocityController(max_linear_velocity,
                                                                linear_tolerance,
                                                                max_angular_velocity,
                                                                angular_tolerance)
-            #Create omni controller
             """
             ========================= YOUR CODE HERE =========================
 
