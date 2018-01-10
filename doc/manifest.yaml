@@ -1,0 +1,20 @@
+actions: []
+authors: Alexander Hagg
+brief: ''
+bugtracker: ''
+depends:
+- nav_msgs
+- catkin
+- roscpp
+- amr_stage
+- amr_srvs
+- amr_msgs
+- tf
+description: amr_mapping
+license: BSD
+maintainers: Alexander Hagg <alexander.hagg@inf.h-brs.de>
+msgs: []
+package_type: package
+repo_url: ''
+srvs: []
+url: ''

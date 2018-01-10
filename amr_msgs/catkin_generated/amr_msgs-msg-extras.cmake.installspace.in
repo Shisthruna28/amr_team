@@ -1,0 +1,2 @@
+set(amr_msgs_MESSAGE_FILES "msg/Cone.msg;msg/Obstacle.msg;msg/PathExecutionFailure.msg;msg/Ranges.msg;msg/WheelSpeeds.msg;msg/Frontiers.msg;msg/ExecutePathAction.msg;msg/ExecutePathActionGoal.msg;msg/ExecutePathActionResult.msg;msg/ExecutePathActionFeedback.msg;msg/ExecutePathGoal.msg;msg/ExecutePathResult.msg;msg/ExecutePathFeedback.msg;msg/MoveToAction.msg;msg/MoveToActionGoal.msg;msg/MoveToActionResult.msg;msg/MoveToActionFeedback.msg;msg/MoveToGoal.msg;msg/MoveToResult.msg;msg/MoveToFeedback.msg")
+set(amr_msgs_SERVICE_FILES "")

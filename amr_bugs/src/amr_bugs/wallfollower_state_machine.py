@@ -60,7 +60,7 @@ __all__ = ['construct']
 #               ud.velocity = (1, 0, 0)
 #==============================================================================
 def findWall(userdata):
-    # userdata.front_min = min(userdata.ranges[3],userdata.ranges[4])
+
     if userdata.front_min < userdata.clearance:
         userdata.velocity = (0, 0, 0)
         return 'found_obstacle'
@@ -68,70 +68,38 @@ def findWall(userdata):
         userdata.velocity = (0.3, 0, 0)
 
 def alignWall(userdata):
-    #userdata.ranges[7] < 1.3) and (userdata.ranges[8] < 1.3)
 
-    if (abs(userdata.ranges[7] - userdata.ranges[8])<= 0.015 and not (userdata.front_min < userdata.clearance )):
-        # if (userdata.ranges[7]> 0.5):
-        #     userdata.velocity=(0.2,-0.1,0.0)
-        # if (userdata.ranges[7]<0.3):
-        #     userdata.velocity=(0.2,0.1,0.0)
-
+#balancing the side sensors
+    if (abs(userdata.ranges[7] - userdata.ranges[8])<= 0.03 and not (userdata.front_min < userdata.clearance )):
         userdata.velocity = (0, 0, 0)
         return 'stopped'
     else:
         userdata.velocity = (0, 0, 0.2)
 
 
-        # else:
 
 
 
 
+#follow the wall until obstacle is found
 def followWall(userdata):
-    #userdata.front_min = min(userdata.ranges[3],userdata.ranges[4])
-    #if userdata.front_min < userdata.clearance:
-    #userdata.velocity = (0.5, 0, 0)
-    # if userdata.front_min < userdata.clearance:
-    #     return 'stopped1'
-    # else:
 
-    if ((userdata.front_min < userdata.clearance) or (userdata.ranges[6]< 0.08) or (userdata.ranges[1]< 0.08)):
+
+    if ((userdata.front_min < userdata.clearance) or (userdata.ranges[6]< 0.2) or (userdata.ranges[1]< 0.2)):
 
         return 'stopped1'
-    # elif (userdata.ranges[7]> 0.4):
-    #     userdata.velocity=(0.0,-0.1,0.0)
-
+#handling convex corners(when side sensors go out of balance)
     elif(userdata.ranges[7] - userdata.ranges[8] > 0.01 and not (userdata.ranges[6]<0.08) ):
         if ((userdata.front_min < userdata.clearance) or (userdata.ranges[6]< 0.08) or (userdata.ranges[1]< 0.08)):
             return 'stopped1'
         else:
-            userdata.velocity = (0.2, 0, -0.3)
+            userdata.velocity = (0.22, 0, -0.3)
     elif (userdata.ranges[7]<userdata.clearance):
-        userdata.velocity=(0.3,0.2,0.0)
-    elif(userdata.ranges[7]>(userdata.clearance+0.05)):
-        userdata.velocity=(0.3,-0.2,0.0)
+        userdata.velocity=(0.3,0.1,0.0)
+    elif(userdata.ranges[7]>(userdata.clearance+0.01)):
+        userdata.velocity=(0.3,-0.1,0.0)
     else:
         userdata.velocity=(0.3,0.0,0.0)
-    # elif ((userdata.ranges[7] < 1) and (userdata.ranges[8] < 1) and userdata.ranges[6]> 0.08 and abs(userdata.ranges[7] - userdata.ranges[8])<= 0.01 and not userdata.front_min < userdata.clearance):
-    #     if (userdata.ranges[7] < 0.1):
-    #         print userdata.ranges[7]
-    #         # userdata.velocity = (0.2, 0, 0.5)
-    #     else :
-    #         pass
-            #userdata.velocity = (0.3, 0, 0)
-    # else:
-    #     userdata.velocity=(0.0,-0.0,0.0)
-
-
-
-    # if ((userdata.ranges[7] - userdata.ranges[8])>userdata.clearance or (userdata.ranges[7] < 0.4) and (userdata.ranges[8] < 0.4)):
-    #     userdata.velocity = (0.2, 0, -0.2)
-    # elif((userdata.ranges[7] < 0.4) and (userdata.ranges[8] < 0.4) and abs(userdata.ranges[7] - userdata.ranges[8])<= userdata.clearance):
-    #     userdata.velocity = (0.3, 0, 0)
-    #     print userdata.ranges[7]
-    # else :
-    #     return 'stopped1'
-    # #userdata.velocity = (1, 0, 0)
 
 
 def set_ranges(self, ranges):
@@ -140,12 +108,13 @@ def set_ranges(self, ranges):
     Its argument is a list of Range messages as received by a sonar callback.
     For left hand side wallfollowing, the sensor values are mirrored (sides are swapped).
     """
+    #mirror data based on mode(direction)
     self.userdata.ranges = np.zeros(16)
     if self.userdata.direction == 1:
 
         for i in range (len(ranges)):
             self.userdata.ranges[i]=(ranges[i].range)
-        self.userdata.front_min = min(self.userdata.ranges[3],self.userdata.ranges[4]) #self.userdata.ranges[5],self.userdata.ranges[6],self.userdata.ranges[1],self.userdata.ranges[2])
+        self.userdata.front_min = min(self.userdata.ranges[3],self.userdata.ranges[4])
         print len(ranges)
     else:
         self.userdata.ranges[7]=ranges[0].range
@@ -157,11 +126,6 @@ def set_ranges(self, ranges):
         self.userdata.front_min = min(self.userdata.ranges[3],self.userdata.ranges[4])
 
 
-
-
-        #print self.userdata.front_min
-    #print self.userdata.ranges[7],self.userdata.ranges[7] - self.userdata.ranges[8]
-    #print self.userdata.ranges
 
 
     #============================= YOUR CODE HERE =============================
@@ -252,13 +216,8 @@ def construct():
     sm.userdata.max_forward_velocity = 0.3
     sm.userdata.default_rotational_speed = 0.5
     sm.userdata.direction = 1
-    sm.userdata.l = None
-    sm.userdata.r = None
-    sm.userdata.lf = None
-    sm.userdata.lb = None
-    sm.userdata.rf = None
-    sm.userdata.rb = None
-    #sm.userdata.front_min = None
+
+
 
 
     with sm:

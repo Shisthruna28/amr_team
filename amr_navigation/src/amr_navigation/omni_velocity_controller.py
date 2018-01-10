@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 PACKAGE = 'amr_navigation'
-
-import math
+import rospy
+from math import *
 from velocity_controller import VelocityController, Velocity
 from velocity_controller import get_shortest_angle, get_distance
+from math import atan2, copysign
 
 class OmniVelocityController(VelocityController):
 
@@ -14,39 +15,33 @@ class OmniVelocityController(VelocityController):
         self._a_max_vel = a_max_vel
         self._a_tolerance = a_tolerance
 
-
     def compute_velocity(self, actual_pose):
-        # Displacement and orientation to the target in world frame:
         dx = self._target_pose.x - actual_pose.x
         dy = self._target_pose.y - actual_pose.y
-        # Step 1: compute remaining distances
+
         linear_dist = get_distance(self._target_pose, actual_pose)
         angular_dist = get_shortest_angle(self._target_pose.theta, actual_pose.theta)
-        angular_teta = angular_dist/linear_dist
-        linear_theta = get_shortest_angle(math.atan2(dy, dx), actual_pose.theta)
+        change_taken_unit= (angular_dist)/linear_dist
 
-        if (abs(linear_dist)<self._l_tolerance and  abs(angular_dist)<self._a_tolerance):
+        if (abs(linear_dist)<self._l_tolerance and abs(angular_dist)<self._a_tolerance):
             self._linear_complete = True
             self._angular_complete = True
             return Velocity()
 
-        if (abs(linear_dist)>self._l_tolerance or self._target_pose.theta != actual_pose.theta) :
+        if (abs(linear_dist)>self._l_tolerance and abs(angular_dist)>self._a_tolerance):
 
+            angular_dist = get_shortest_angle(atan2(dy, dx), actual_pose.theta)
 
+            vel_x = cos(angular_dist)*self._l_max_vel
+            vel_y = sin(angular_dist)*self._l_max_vel
+            vel_z = self._a_max_vel*change_taken_unit
 
+            return Velocity(vel_x, vel_y, vel_z)
 
-            linear_x = math.cos(linear_theta)*self._l_max_vel
-            linear_y= math.sin(linear_theta)*self._l_max_vel
-            angular_z= self._a_max_vel*angular_teta
-            #when large angle is given angular velocity might exceed the max angle _velocity, hence saturating it
-            if angular_z > self._a_max_vel:
-                return Velocity(linear_x,linear_y,self._a_max_vel)
-            else:
-                return Velocity(linear_x,linear_y,angular_z)
-
-        else :
-            return Velocity(0,0,0)
-
+        else:
+            self._linear_complete = True
+            self._angular_complete = True
+            return Velocity()
 
     """
     ========================= YOUR CODE HERE =========================

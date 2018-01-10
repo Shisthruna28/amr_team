@@ -10,57 +10,23 @@ import rospy
 from actionlib import SimpleActionClient, SimpleActionServer
 from nav_msgs.msg import Path
 from amr_msgs.msg import MoveToAction, MoveToGoal, ExecutePathAction, \
-                         ExecutePathFeedback, ExecutePathResult, ExecutePathGoal
+                         ExecutePathFeedback, ExecutePathResult
 
 
 class PathExecutor:
-    _feedback = ExecutePathFeedback()
-    _result = ExecutePathResult()
 
-    def __init__(self, name):
-	# client is created
-        self._move_to_client = SimpleActionClient('/bug2/move_to', MoveToAction)
-        # server is created
-        self._as = SimpleActionServer('/path_executor/execute_path', ExecutePathAction, \
-                                        execute_cb=self.execute_cb, auto_start=False)
-        self._as.start()
-        self.flag = True
-        self.success = True
+    def __init__(self,name):
+        self._action_name = name
+      	self._as = SimpleActionServer(self._action_name, ExecutePathAction, execute_cb=self.execute_cb, auto_start = False)
+      	self._as.start()
+    	rospy.loginfo("in action_server")
 
     def execute_cb(self, goal):
-        self._move_to_client.wait_for_server()
-    	self.move = MoveToGoal()
-    	for i in range(len(goal.path.poses)):
-            if i == 2:
-                self.success = True
-            else:
-                self.success = False
-    	    self._pose = goal.path.poses[i]
-            self.move.target_pose = self._pose
-		# goal is published to moveto
-            self._move_to_client.send_goal(self.move, done_cb=self.move_to_done_cb)
-            self._move_to_client.wait_for_result()
-    	rospy.spin()
-	#check for preemption
-    	while flag :
-    		if self._as.is_preempt_requested():
-    			rospy.loginfo('%s: Preempted' % self._action_name)
-    			self._as.set_preempted()
-    			break
+        pass
 
     def move_to_done_cb(self, state, result):
-	#checking for unreachable goal
-    	if(state == 3):
-            self._result.visited.append(True)
-            self._feedback.reached = True
-            self._feedback.pose = self._pose
-        elif(state == 4):
-    		self._feedback.reached = False
-    	rospy.loginfo(self._result)
-    	self._as.publish_feedback(self._feedback)
-	#publishes the results
-    	if self.success == True:
-            self._as.set_succeeded(self._result)
+        pass
+
 
 if __name__ == '__main__':
     rospy.init_node(NODE)

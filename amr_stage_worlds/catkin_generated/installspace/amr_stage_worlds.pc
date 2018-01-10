@@ -1,0 +1,8 @@
+prefix=/opt/ros/indigo
+
+Name: amr_stage_worlds
+Description: Description of amr_stage_worlds
+Version: 1.0.0
+Cflags: 
+Libs: -L/opt/ros/indigo/lib 
+Requires: 

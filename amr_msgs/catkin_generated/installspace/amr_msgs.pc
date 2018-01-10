@@ -1,0 +1,8 @@
+prefix=/opt/ros/indigo
+
+Name: amr_msgs
+Description: Description of amr_msgs
+Version: 1.0.0
+Cflags: -I/opt/ros/indigo/include
+Libs: -L/opt/ros/indigo/lib 
+Requires: actionlib actionlib_msgs sensor_msgs geometry_msgs nav_msgs

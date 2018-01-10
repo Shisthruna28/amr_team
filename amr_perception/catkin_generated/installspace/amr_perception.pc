@@ -1,0 +1,8 @@
+prefix=/opt/ros/indigo
+
+Name: amr_perception
+Description: Description of amr_perception
+Version: 1.0.0
+Cflags: -I/opt/ros/indigo/include
+Libs: -L/opt/ros/indigo/lib 
+Requires: roscpp geometry_msgs dynamic_reconfigure amr_msgs amr_srvs sensor_msgs roscpp geometry_msgs dynamic_reconfigure amr_msgs amr_srvs sensor_msgs

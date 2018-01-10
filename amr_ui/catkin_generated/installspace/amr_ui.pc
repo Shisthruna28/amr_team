@@ -1,0 +1,8 @@
+prefix=/opt/ros/indigo
+
+Name: amr_ui
+Description: Description of amr_ui
+Version: 1.0.0
+Cflags: 
+Libs: -L/opt/ros/indigo/lib 
+Requires: rospy actionlib tf sensor_msgs std_msgs geometry_msgs amr_msgs amr_srvs python-pyside

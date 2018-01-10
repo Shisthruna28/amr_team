@@ -1,0 +1,8 @@
+prefix=/opt/ros/indigo
+
+Name: amr_srvs
+Description: Description of amr_srvs
+Version: 1.0.0
+Cflags: -I/opt/ros/indigo/include
+Libs: -L/opt/ros/indigo/lib 
+Requires: geometry_msgs amr_msgs

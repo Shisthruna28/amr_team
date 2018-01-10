@@ -1,0 +1,8 @@
+prefix=/opt/ros/indigo
+
+Name: amr_braitenberg
+Description: Description of amr_braitenberg
+Version: 1.0.0
+Cflags: -I/opt/ros/indigo/include
+Libs: -L/opt/ros/indigo/lib 
+Requires: roscpp dynamic_reconfigure amr_msgs amr_srvs amr_stage
