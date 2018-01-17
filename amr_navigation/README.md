@@ -13,7 +13,7 @@ This node is a motion controller which allows to drive the robot to a certain
 position in the global coordinate frame.
 
 The motion controller has two modes of operation (which we call velocity
-controllers):what is omnidirectional
+controllers):
 
 * *DiffVelocityController*, which decomposes the required movement into angular
   and linear components, and executes them separately. Moreover, it drives the

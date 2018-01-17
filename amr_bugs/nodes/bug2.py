@@ -146,7 +146,7 @@ if __name__ == '__main__':
     # Similarly to how it is done in MotionController, create a combination of
     # listened and re-publisher to allow the user to send a goal as a message
     # (not as an action service request).
-    action_goal_pub = rospy.Publisher('~move_to/goal', MoveToActionGoal,queue_size=100)
+    action_goal_pub = rospy.Publisher('~move_to/goal', MoveToActionGoal)
 
     def simple_goal_cb(target_pose):
         rospy.loginfo('Received target pose through the "simple goal" topic. '

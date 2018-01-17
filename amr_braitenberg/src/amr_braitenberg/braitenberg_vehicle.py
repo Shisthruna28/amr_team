@@ -1,43 +1,26 @@
 #!/usr/bin/env python
 
-
+import numpy as np
 class BraitenbergVehicle:
-    
+
     TYPE_A = 0  # direct connections
     TYPE_B = 1  # cross connections
     TYPE_C = 2  # direct and cross connections
-        
+
     def __init__(self, *args):
         """
         init with default params (type A, factor 1.0)
         """
         self.set_params()
         pass
-    
-    
+
+
     def set_params(self, vehicle_type=TYPE_A, factor_1=1.0, factor_2=1.0):
         self._vehicle_type = vehicle_type
         self._f_1, self._f_2 = factor_1, factor_2
-    
-    
+
+
     def compute_wheel_speeds(self, left_in, right_in):
-        if(self._vehicle_type == 0):
-	   if(left_in < right_in):
-                return (left_in*self._f_1,right_in*self._f_1)
-	   elif(left_in > right_in):
-                return (right_in*self._f_1,left_in*self._f_1)
-           else :
-		return(left_in*self._f_1,right_in*self._f_1)
-
-	if(self._vehicle_type == 1):
-	        return(left_in*self._f_1,right_in*self._f_1)
-	if(self._vehicle_type == 2):
-	        return((left_in*self._f_1+right_in*self._f_2),(left_in*self._f_2+right_in*self._f_1))
-
-        else:
-            return (0,0)
-
-	   
         """
         ==================== YOUR CODE HERE ====================
         Instructions: based on the input from the left and
@@ -51,7 +34,26 @@ class BraitenbergVehicle:
         (in interval [0..1])
         ========================================================
         """
+        ws1 = np.array([0.0,0.0])
+        if self._vehicle_type == self.TYPE_A:
+            ws1[0]= self._f_1*((left_in)/4.0)+0.1
+            ws1[1]= self._f_1*((right_in)/4.0)+0.1
+        elif self._vehicle_type == self.TYPE_B:
+                ws1[1]= self._f_1*((left_in)/4.0)+0.1
+                ws1[0]= self._f_1*((right_in)/4.0)+0.1
+        elif self._vehicle_type == self.TYPE_C:
+                ws1[0]= (self._f_1*(left_in) + self._f_2*(right_in))/4.0+0.1
+                ws1[1]= (self._f_1*(right_in) + self._f_2*(left_in))/4.0+0.1
+
+        #self._wheel_speeds_publisher.publsh(ws)
 
 
 
-        #return (0.0, 0.0)
+
+
+
+
+
+
+
+        return (ws1[0],ws1[1])
