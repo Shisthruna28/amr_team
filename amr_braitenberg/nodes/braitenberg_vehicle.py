@@ -58,8 +58,6 @@ class BraitenbergVehicleNode:
 
 
     def _sonar_callback(self, ranges_msg):
-	self.left_in=ranges_msg.ranges[0].range
-	self.right_in =ranges_msg.ranges[1].range
         """
         ========================= YOUR CODE HERE =========================
         This node subscribes to the Braitenberg vehicle sonars.
@@ -79,15 +77,19 @@ class BraitenbergVehicleNode:
         ==================================================================
         """
         ws = WheelSpeeds()
-	ws.speeds = self._vehicle.compute_wheel_speeds(self.left_in,self.right_in)
-	self._wheel_speeds_publisher.publish(ws)
+        r1 = ranges_msg.ranges[0].range
+        r2 = ranges_msg.ranges[1].range
+        ws = self._vehicle.compute_wheel_speeds(r1, r2)
+        # ws.speeds[0]= 4-ranges_msg.ranges[0].range
+        # ws.speeds[1]= 4-ranges_msg.ranges[1].range
+        self._wheel_speeds_publisher.publish(ws)
 
         # Output the debug info:
-        rospy.logdebug('[{:.2f}, {:.2f}] --> [{:.2f}, {:.2f}]'.format(
-                                                      ranges_msg.ranges[0].range,
-                                                      ranges_msg.ranges[1].range,
-                                                      ws.speeds[0],
-                                                      ws.speeds[1]))
+        # rospy.logdebug('[{:.2f}, {:.2f}] --> [{:.2f}, {:.2f}]'.format(
+        #                                               ranges_msg.ranges[0].range,
+        #                                               ranges_msg.ranges[1].range,
+        #                                               ws.speeds[0],
+        #                                               ws.speeds[1]))
 
 
     def _reconfigure_callback(self, config, params):
@@ -105,11 +107,11 @@ class BraitenbergVehicleNode:
         """
         self._vehicle.set_params(config.type,config.factor1,config.factor2)
 
-        rospy.logdebug('Vehicle reconfigured: type {}, '
-                       'factors {:.2f}] and {:.2f}]'.format(
-                                                           ['A','B','C'][config.type],
-                                                           config.factor1,
-                                                           config.factor2))
+        # rospy.logdebug('Vehicle reconfigured: type {}, '
+        #                'factors {:.2f}] and {:.2f}]'.format(
+        #                                                    ['A','B','C'][config.type],
+        #                                                    config.factor1,
+        #                                                    config.factor2))
         return config
 
 

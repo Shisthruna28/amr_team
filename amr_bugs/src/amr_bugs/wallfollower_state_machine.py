@@ -85,12 +85,12 @@ def alignWall(userdata):
 def followWall(userdata):
 
 
-    if ((userdata.front_min < userdata.clearance) or (userdata.ranges[6]< 0.2) or (userdata.ranges[1]< 0.2)):
+    if ((userdata.front_min < userdata.clearance) or (userdata.ranges[6]< 0.35) or (userdata.ranges[1]< 0.35)):
 
         return 'stopped1'
 #handling convex corners(when side sensors go out of balance)
-    elif(userdata.ranges[7] - userdata.ranges[8] > 0.01 and not (userdata.ranges[6]<0.08) ):
-        if ((userdata.front_min < userdata.clearance) or (userdata.ranges[6]< 0.08) or (userdata.ranges[1]< 0.08)):
+    elif(userdata.ranges[7] - userdata.ranges[8] > 0.01 and not (userdata.ranges[6]<0.35) ):
+        if ((userdata.front_min < userdata.clearance) or (userdata.ranges[6]< 0.35) or (userdata.ranges[1]< 0.35)):
             return 'stopped1'
         else:
             userdata.velocity = (0.22, 0, -0.3)
@@ -211,7 +211,7 @@ def construct():
     # Set initial values in userdata
     sm.userdata.velocity = (0, 0, 0)
     sm.userdata.mode = 1
-    sm.userdata.clearance = 0.8
+    sm.userdata.clearance = 2
     sm.userdata.ranges = []
     sm.userdata.max_forward_velocity = 0.3
     sm.userdata.default_rotational_speed = 0.5

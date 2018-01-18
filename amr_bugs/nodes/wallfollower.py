@@ -35,7 +35,7 @@ class WallfollowerNode:
         # Create a sonar subscriber
         self.sonar_sub = rospy.Subscriber('/sonar_pioneer', Ranges, self.sonar_cb)
         # Create a velocity publisher
-        self.velocity_pub = rospy.Publisher('/cmd_vel', Twist,queue_size=100)
+        self.velocity_pub = rospy.Publisher('/cmd_vel', Twist)
         # Create a dynamic reconfigure server
         self.reconfigure_srv = Server(WallfollowerConfig, self.reconfigure_cb)
         # Create an introspection server for visual inspection of the machine

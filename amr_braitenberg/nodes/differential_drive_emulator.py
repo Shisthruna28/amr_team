@@ -6,16 +6,17 @@ NODE = 'differential_drive_emulator'
 import rospy
 from geometry_msgs.msg import Twist
 from amr_msgs.msg import WheelSpeeds
+import numpy as np
 
 
 class DifferentialDriveEmulatorNode:
-    
+
     def __init__(self):
         rospy.init_node(NODE)
         # read differential drive params:
         self._wheel_diameter = rospy.get_param('wheel_diameter', 0.15)
         self._distance_between_wheels = rospy.get_param('distance_between_wheels', 0.5)
-        
+
         self._wheel_speed_subscriber = rospy.Subscriber('/cmd_vel_diff',
                                                         WheelSpeeds,
                                                         self._wheel_speed_callback,
@@ -31,8 +32,6 @@ class DifferentialDriveEmulatorNode:
             return
         else:
             twist = Twist()
-	    twist.linear.x = (msg.speeds[0]+msg.speeds[1])/2*(self._wheel_diameter/2.0)
-	    twist.angular.z = (msg.speeds[0]-msg.speeds[1])*(self._wheel_diameter/2.0)/self._distance_between_wheels
             """
             ==================== YOUR CODE HERE ====================
             Instructions: compute linear and angular components based
@@ -42,6 +41,15 @@ class DifferentialDriveEmulatorNode:
             You may lookup the geometry_msgs.msg declaration at ros.org
             ========================================================
             """
+            v1 = msg.speeds[0]
+            v2 = msg.speeds[1]
+            r = self._wheel_diameter/2
+            twist.linear.x = r*(v1+v2)/2
+            twist.linear.y=0
+            twist.linear.z=0
+            twist.angular.x=0
+            twist.angular.y=0
+            twist.angular.z = r*(v2-v1)/self._distance_between_wheels
 
             self._velocity_publisher.publish(twist)
             rospy.logdebug('[{:.2f} {:.2f}] --> [{:.2f} {:.2f}]'.format(msg.speeds[0],
