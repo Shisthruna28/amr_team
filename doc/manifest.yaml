@@ -3,14 +3,16 @@ authors: Alexander Hagg
 brief: ''
 bugtracker: ''
 depends:
-- nav_msgs
 - catkin
 - roscpp
 - amr_stage
-- amr_srvs
 - amr_msgs
+- visualization_msgs
+- rospy
+- amr_srvs
 - tf
-description: amr_mapping
+- amr_mapping
+description: amr_localization
 license: BSD
 maintainers: Alexander Hagg <alexander.hagg@inf.h-brs.de>
 msgs: []
