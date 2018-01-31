@@ -21,11 +21,11 @@ class PoseLikelihoodServerNode:
     """
 
     def __init__(self):
-        self.beam_count=12
-        self.actual_value = []
+        self.no_of_beams=12
+        self.actual_readings = []
         self.angle_max = 0.0
         self.angle_min= 0.0
-        self.angle_inc=0.0
+        self.angle_increment=0.0
         self.likelihood = []
 
         rospy.init_node(NODE)
@@ -67,16 +67,16 @@ class PoseLikelihoodServerNode:
     Function to get the readings of the laser. The angle_upper, angle_lower and angle_step parameters are used to compute the orientation of each beam."""
 
     def laser_callback(self,data):
-        self.beam_count = len(data.ranges)
-        self.actual_value = []
+        self.no_of_beams = len(data.ranges)
+        self.actual_readings = []
 
-        for i in range(self.beam_count):
-            self.actual_value.append(data.ranges[i])
+        for i in range(self.no_of_beams):
+            self.actual_readings.append(data.ranges[i])
 
         self.angle_max = data.angle_max
         self.angle_min = data.angle_min
         self.range_max = data.range_max
-        self.angle_inc = data.angle_inc
+        self.angle_increment = data.angle_increment
 
 
     def pose_callback(self, response):
@@ -87,7 +87,7 @@ class PoseLikelihoodServerNode:
 
         for i in range(len(poses_value)):
             #creating the service request
-            occupancy_get = GetNearestOccupiedPointOnBeamRequest()
+            occupancy_query_request = GetNearestOccupiedPointOnBeamRequest()
 
             #parameters for probability calculation
             #increasing sigma value decreases the likelihood values and very few likely points are seen in RViz
@@ -96,23 +96,23 @@ class PoseLikelihoodServerNode:
             bad_match = 0
             total_weight = 1.0
             pose = self.transform_pose(poses_value[i])
-            occupancy_get.beams = pose
-            occupancy_get.threshold = 2
+            occupancy_query_request.beams = pose
+            occupancy_query_request.threshold = 2
             #request to client to get distances
-            occupancy_query_client_request= self.occupancy_query_client(occupancy_get)
-            for j in range(len(self.actual_value)):
-                sim_dist = occupancy_query_client_request.distances[j]
+            occupancy_query_client_request= self.occupancy_query_client(occupancy_query_request)
+            for j in range(len(self.actual_readings)):
+                distance_simulated = occupancy_query_client_request.distances[j]
                 #Thresholding
-                if(sim_dist < 0.0):
-                    sim_dist = 0.0
-                elif(sim_dist > self.range_max):
-                    sim_dist = self.range_max
-                act_dist = self.actual_value[j]
-                distance_diff = abs(act_dist-sim_dist)
+                if(distance_simulated < 0.0):
+                    distance_simulated = 0.0
+                elif(distance_simulated > self.range_max):
+                    distance_simulated = self.range_max
+                actual_distance = self.actual_readings[j]
+                distance_diff = abs(actual_distance-distance_simulated)
 
                 if(distance_diff <= 1.8*sigma_value):
                     # Calculate likelihood for the given distance values
-                    weight_of_beam = (1.0 / (sigma_value*math.sqrt(2*math.pi))) * math.exp((-math.pow(sim_dist - act_dist, 2.0)) / (2 * math.pow(sigma_value, 2.0)))
+                    weight_of_beam = (1.0 / (sigma_value*math.sqrt(2*math.pi))) * math.exp((-math.pow(distance_simulated - actual_distance, 2.0)) / (2 * math.pow(sigma_value, 2.0)))
                     total_weight *= weight_of_beam
                 else :
                     bad_match = bad_match+1
@@ -121,8 +121,8 @@ class PoseLikelihoodServerNode:
             else :
                 total_weight = 0.0
             likelihood_values.append(total_weight)
-        calc_likelihood = GetMultiplePoseLikelihoodResponse(likelihood_values)
-        return calc_likelihood
+        likelihood_response = GetMultiplePoseLikelihoodResponse(likelihood_values)
+        return likelihood_response
 
 
 
@@ -137,20 +137,20 @@ class PoseLikelihoodServerNode:
             rospy.logerror("Error tf")
         beam_pose_array=[]
         # Individual Laser beams transformed to robot's frame
-        for s in range(self.beam_count):
-            single_beampose = Pose2D()
-            single_beampose.x = robot_pose.pose.position.x + x
-            single_beampose.y = robot_pose.pose.position.y + y
+        for s in range(self.no_of_beams):
+            individual_beam_pose = Pose2D()
+            individual_beam_pose.x = robot_pose.pose.position.x + x
+            individual_beam_pose.y = robot_pose.pose.position.y + y
             #shift between each laser beam
-            individual_beam_orientations = self.angle_min + (s*self.angle_inc)
+            individual_beam_orientations = self.angle_min + (s*self.angle_increment)
             #Laser Frames relative to robot's frame
             robot_pose_orientations = (robot_pose.pose.orientation.x,robot_pose.pose.orientation.y,robot_pose.pose.orientation.z,robot_pose.pose.orientation.w)
             #convert to euler
             euler = tf.transformations.euler_from_quaternion(robot_pose_orientations)
             #adding the angle contributed by laser_frame,robot_frame and shift in each laser frame
-            single_beampose.theta =  yaw + euler[2] + individual_beam_orientations
+            individual_beam_pose.theta =  yaw + euler[2] + individual_beam_orientations
             #appending each individual beam pose
-            beam_pose_array.append(single_beampose)
+            beam_pose_array.append(individual_beam_pose)
         return beam_pose_array
 """
 ============================== YOUR CODE HERE ==============================

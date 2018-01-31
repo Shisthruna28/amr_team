@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 PACKAGE = 'amr_bugs'
 
 import roslib

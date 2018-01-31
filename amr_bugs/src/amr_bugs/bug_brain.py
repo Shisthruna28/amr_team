@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-
+from planar import Point, Vec2
+from planar.c import Line
+from math import *
 
 #=============================== YOUR CODE HERE ===============================
 # Instructions: complete the currently empty BugBrain class. A new instance of
@@ -22,7 +24,7 @@
 #            from planar import Point, Vec2
 #            from planar.c import Line
 #            from math import degrees
-#
+# #
 #       As discussed in the lab class, you will need to install the library by
 #       executing `sudo pip install planar` in the terminal.
 #
@@ -43,13 +45,6 @@
 #           self.ln_one = (p1, p2)
 #           self.ln_two = [p1, p2]
 #           self.ln_three = Line.from_points([p1, p2]) # if you are using 'planar'
-# import urllib3.contrib.pyopenssl
-# urllib3.contrib.pyopenssl.inject_into_urllib3()
-
-PACKAGE = 'amr_bugs'
-from planar import Point, Vec2
-from planar.c import Line
-from math import degrees
 
 class BugBrain:
 
@@ -58,69 +53,59 @@ class BugBrain:
     def __init__(self, goal_x, goal_y, side):
         self.goal_x = goal_x
         self.goal_y = goal_y
-        self.Vec_goal = Vec2(self.goal_x,self.goal_y)
-        self.angle_check = None
+        self.side = side
+        self.hit_points_list = []
         self.Vec_hit = None
-        self.Vec_n = None
-        self.xhit = None
-        self.yhit = None
-        self.hitlist = []
-        self.leavelist = []
+        self.angle_vec = None
         self.last_hit_dist = None
-        self.curr_leave_dist = None
-        self.leave_wall_count = 0
-        self.started_away = 0
-
-
-
-
-
+        self.current_to_leave_dist = None
+        self.unreach_points = None
+        self.list_leaving_points = []
+        self.x1 = None
+        self.y1 = None
+        self.leave_wall_list = []
+        self.wp_leave_wall_points = None
+        self.wp_goal_point = Point(self.goal_x, self.goal_y)
+        self.count = 0
+        self.flag = False
     def follow_wall(self, x, y, theta):
         """
         This function is called when the state machine enters the wallfollower
-        state.
-        """
-        #record hit points and draw line from hit points to goal using vectors
-        self.wp_hitrec = Vec2(x,y)
-        self.xhit = x
-        self.yhit = y
-        self.wp_three = Point(x, y)
-        self.hitlist.append((x,y))
-        print self.hitlist[0][0]
-        self.wp_goal = Point(self.goal_x, self.goal_y)
-        self.ln_three = Line.from_points([self.wp_three, self.wp_goal])
-        self.Vec_hit = Vec2(x,y)
-        self.Vec_n = self.Vec_goal-self.Vec_hit
-        self.last_hit_dist = self.Vec_hit.distance_to(self.wp_goal)
-
-
-
-
-        pass
+        state. """
+        self.x = x
+        self.y = y
+        self.theta = theta
+        self.wp_hit_point = Point(self.x, self.y) #creating a list for all the points it hits
+        self.hit_points_list.append((x,y))
+        self.ln_line_to_goal = Line.from_points([self.wp_hit_point, self.wp_goal_point]) # Draws a line from hit point to goal point
+        self.Vec_hit = Point(x,y)
+        self.angle_vec = self.wp_goal_point-self.Vec_hit
+        print self.angle_vec
+        self.last_hit_dist = self.Vec_hit.distance_to(self.wp_goal_point)
+        self.count = self.count + 1
 
     def leave_wall(self, x, y, theta):
         """
         This function is called when the state machine leaves the wallfollower
         state.
         """
-        #used to check if the bot has left wall to follow line again(i.e obstacle is not closed)
-        self.leave_wall_count = self.leave_wall_count+1
-        # compute and store necessary variables
-        pass
+        self.flag  = True
+        self.wp_leave_wall_points = Point(x,y)
 
     def is_goal_unreachable(self, x, y, theta):
         """
         This function is regularly called from the wallfollower state to check
         the brain's belief about whether the goal is unreachable.
         """
-        #check if the robot has started movement to follow the wall after a hit
-        if (abs(self.xhit - x)>0.5 or abs(self.yhit - y)>0.5) :
-            self.started_away = self.started_away+1
-        #return true if the bot reaches back to the origin point(first instance of hit)
-        if (abs(x- self.hitlist[0][0])<0.5 and abs(y- self.hitlist[0][1])<0.5 and self.leave_wall_count==0 and self.started_away>0):
-            return True
-
-
+        # self.x_unreach = x
+        # self.y_unreach = y
+        # self.wp_current_pos = Point(x,y)
+        # self.wp_hit_point.distance_to(self.wp_current_pos)
+        # print self.wp_current_pos
+        # if (self.flag == False):
+        #     if(abs(self.wp_hit_point.distance_to(self.wp_current_pos))-abs(self.wp_goal_point.distance_to(self.wp_current_pos)) < 0.3):
+        #         return True
+        # return False
 
     def is_time_to_leave_wall(self, x, y, theta):
         """
@@ -128,21 +113,20 @@ class BugBrain:
         the brain's belief about whether it is the right time (or place) to
         leave the wall and move straight to the goal.
         """
-        #Draw vector at every point and compare the angle with the main vector connecting to the goal(i.e line to follow)
-        v = Vec2(x, y)
-        v1 = Vec2(self.goal_x, self.goal_y)
-        v3 = v1 - v
-        angle_diff = v3.angle_to(self.Vec_n)
-        print abs(angle_diff)
-        self.curr_leave_dist = v.distance_to(v1)
-        #check if the vectors are parallel and leave only if the current distance to goal is shorter than the distance from the previous hit point to goal
-        if (abs(self.xhit - x)>0.5 or abs(self.yhit - y)>0.5) and (abs(angle_diff)<2 or (abs(angle_diff)<182 and abs(angle_diff)>178 )):
-            self.leavelist.append((x,y))
-            if self.curr_leave_dist < self.last_hit_dist:
+        self.x1 = x
+        self.y1 = y
+        self.theta = theta
+        v1 = Vec2(x,y)
+        goal_vec = self.wp_goal_point
+        v3 = v1 - goal_vec
+        #print v3
+        angles_diff = v3.angle_to(self.angle_vec)
+        #print angles_diff
+        self.current_to_leave_dist = v1.distance_to(goal_vec)
+        if (abs(self.x - self.x1)>0.5 or abs(self.y - self.y1)>0.5) and (abs(angles_diff)<2 or (abs(angles_diff)<182 and abs(angles_diff)>178 )):
+            self.list_leaving_points.append((self.x1,self.y1))
+            if self.current_to_leave_dist < self.last_hit_dist:
                 return True
-
-
-
-
+        return False
 
 #==============================================================================

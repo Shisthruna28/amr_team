@@ -11,7 +11,7 @@ class VelocityController:
     """
     Base class for velocity controller for the sake of OOP
     """
-
+    
     def __init__(self, *args):
         self._linear_complete  = True
         self._angular_complete = True
@@ -37,7 +37,7 @@ class Velocity:
     """
     x-y-theta wrapper of the Twist
     """
-
+    
     def __init__(self, x = 0, y=0, theta = 0):
         self.x, self.y, self.theta = x, y, theta
 
@@ -68,3 +68,4 @@ def get_shortest_angle(target_angle, current_angle):
     a1 = target_angle
     a2 = current_angle
     return math.atan2(math.sin(a1-a2), math.cos(a1-a2))
+ 

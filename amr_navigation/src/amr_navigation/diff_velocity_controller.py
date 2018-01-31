@@ -10,11 +10,11 @@ class DiffVelocityController(VelocityController):
     """
     A simple implementation of velocity controller that drives the robot as if
     it had a differential drive base.
-
+    
     The base is assumed to have 2 degrees of freedom, i.e. can mave forwards
     and rotate. The controller tries to orient the robot towards the goal and
     then move it forwards until it is reached.
-
+    
     The robot drives at a constant (max) velocity until it has almost reached
     the goal pose, then it switches to the minimum velocity.
     """
@@ -33,21 +33,21 @@ class DiffVelocityController(VelocityController):
         # Step 1: compute remaining distances
         linear_dist = get_distance(self._target_pose, actual_pose)
         angular_dist = get_shortest_angle(self._target_pose.theta, actual_pose.theta)
-
+        
         if (    abs(linear_dist)<self._l_tolerance and
                 abs(angular_dist)<self._a_tolerance     ):
             self._linear_complete = True
             self._angular_complete = True
             return Velocity()
-
+        
         if abs(linear_dist>self._l_tolerance):
             angular_dist = get_shortest_angle(atan2(dy, dx), actual_pose.theta)
             # We still need to drive to the target, therefore we first need
             # to make sure that we are oriented towards it.
-
+        
         # Step 2: compute velocities
         linear_vel, angular_vel = 0, 0
-
+        
         if abs(linear_dist)>self._l_tolerance:
             linear_vel = (self._l_max_vel if abs(linear_dist)>5*self._l_tolerance else
                           self._l_tolerance)

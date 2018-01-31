@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 PACKAGE = 'amr_navigation'
-
-import math
+import rospy
+from math import *
 from velocity_controller import VelocityController, Velocity
 from velocity_controller import get_shortest_angle, get_distance
+from math import atan2, copysign
 
 class OmniVelocityController(VelocityController):
 
@@ -15,40 +16,32 @@ class OmniVelocityController(VelocityController):
         self._a_tolerance = a_tolerance
 
     def compute_velocity(self, actual_pose):
-        # Displacement and orientation to the target in world frame:
         dx = self._target_pose.x - actual_pose.x
         dy = self._target_pose.y - actual_pose.y
-        # Step 1: compute remaining distances
+
         linear_dist = get_distance(self._target_pose, actual_pose)
         angular_dist = get_shortest_angle(self._target_pose.theta, actual_pose.theta)
-        #ratio for calculating the angles to be moved for unit distance to be covered which will
-        #later be used to control the angular velocity.
-        a_l = angular_dist/linear_dist
-        #print angular_dist
+        change_taken_unit= (angular_dist)/linear_dist
 
-        if (abs(linear_dist)<self._l_tolerance and  abs(angular_dist)<self._a_tolerance):
+        if (abs(linear_dist)<self._l_tolerance and abs(angular_dist)<self._a_tolerance):
             self._linear_complete = True
             self._angular_complete = True
             return Velocity()
 
-        if (abs(linear_dist)>self._l_tolerance or self._target_pose.theta != actual_pose.theta) :
+        if (abs(linear_dist)>self._l_tolerance and abs(angular_dist)>self._a_tolerance):
 
-            angular_dist = get_shortest_angle(math.atan2(dy, dx), actual_pose.theta)
+            angular_dist = get_shortest_angle(atan2(dy, dx), actual_pose.theta)
 
+            vel_x = cos(angular_dist)*self._l_max_vel
+            vel_y = sin(angular_dist)*self._l_max_vel
+            vel_z = self._a_max_vel*change_taken_unit
 
-            x_v = (math.cos(angular_dist)*self._l_max_vel)/(abs(angular_dist)+1)
-            y_v = (math.sin(angular_dist)*self._l_max_vel)/(abs(angular_dist)+1)
-            z_v_1 = self._a_max_vel*a_l
-            print a_l
-            if z_v_1 > self._a_max_vel:
-                return Velocity(x_v,y_v,self._a_max_vel)
+            return Velocity(vel_x, vel_y, vel_z)
 
-
-            else:
-                return Velocity(x_v,y_v,z_v_1)
-
-        else :
-            return Velocity(0,0,0)
+        else:
+            self._linear_complete = True
+            self._angular_complete = True
+            return Velocity()
 
     """
     ========================= YOUR CODE HERE =========================
